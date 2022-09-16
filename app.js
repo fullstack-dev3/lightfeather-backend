@@ -14,7 +14,14 @@ app.get('/api/supervisors', (req, res) => {
     });
 
     response.on('end', () => {
-      let result = JSON.parse(Buffer.concat(body).toString());
+      let data = JSON.parse(Buffer.concat(body).toString());
+
+      let result = [];
+      data.forEach(item => {
+        if (isNaN(item.jurisdiction)) {
+          result.push(item);
+        }
+      });
       
       result.sort((a, b) => {
         if (a.lastName.toUpperCase() === b.lastName.toUpperCase()) {
