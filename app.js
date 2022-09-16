@@ -14,16 +14,18 @@ app.get('/api/supervisors', (req, res) => {
     });
 
     response.on('end', () => {
-      let data = JSON.parse(Buffer.concat(body).toString());
+      let parsedData = JSON.parse(Buffer.concat(body).toString());
 
-      let result = [];
-      data.forEach(item => {
+      // Remove numeric jurisdictions from response
+      let filtered = [];
+      parsedData.forEach(item => {
         if (isNaN(item.jurisdiction)) {
-          result.push(item);
+          filtered.push(item);
         }
       });
-      
-      result.sort((a, b) => {
+
+      // Sort by jurisdiction, last name, and first name in alphabetical order
+      filtered.sort((a, b) => {
         if (a.lastName.toUpperCase() === b.lastName.toUpperCase()) {
           return a.firstName > b.firstName ? 1 : -1;
         }
@@ -33,6 +35,15 @@ app.get('/api/supervisors', (req, res) => {
         }
 
         return a.jurisdiction > b.jurisdiction ? 1 : -1;
+      });
+
+      // Formatting of the result
+      let result = [];
+      filtered.forEach(item => {
+        result.push({
+          id: item.id,
+          label: item.formatted = item.jurisdiction + ' - ' + item.lastName + ', ' + item.firstName
+        });
       });
 
       res.send(result);
