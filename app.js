@@ -1,7 +1,15 @@
 const express = require('express');
 const https = require('https');
+const cors = require('cors');
 const app = express();
-const port = 3000;
+const port = 4000;
+
+app.use(cors());
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 
 app.get('/api/supervisors', (req, res) => {
   const url = 'https://o3m5qixdng.execute-api.us-east-1.amazonaws.com/api/managers';
@@ -48,6 +56,47 @@ app.get('/api/supervisors', (req, res) => {
 
       res.send(result);
     });
+  });
+});
+
+app.post('/api/submit', (req, res) => {
+  let valid = true;
+  let errors = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    supervisor: ''
+  };
+  let body = [];
+
+  req.on('data', chunk => {
+    body.push(chunk);
+  });
+
+  req.on('end', () => {
+    let parsedData = JSON.parse(Buffer.concat(body).toString());
+
+    if (parsedData.firstName === '') {
+      errors.firstName = 'First Name is required!';
+      valid = false;
+    }
+
+    if (parsedData.lastName === '') {
+      errors.lastName = 'Last Name is required!';
+      valid = false;
+    }
+
+    if (parsedData.supervisor === '') {
+      errors.supervisor = 'Supervisor is required!';
+      valid = false;
+    }
+
+    if (valid) {
+      res.send({status: 200});
+    } else {
+      res.send({status: 400, errors});
+    }
   });
 });
 
